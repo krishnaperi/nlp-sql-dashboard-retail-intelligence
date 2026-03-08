@@ -12,14 +12,31 @@ function getConnection(): Promise<snowflake.Connection> {
         }
 
         // Key-pair auth bypasses MFA for programmatic access
-        const privateKeyPath = path.join(process.cwd(), 'snowflake_rsa_key.p8');
-        const privateKeyFile = fs.readFileSync(privateKeyPath, 'utf8');
+        let privateKey = process.env.SNOWFLAKE_PRIVATE_KEY;
+
+        if (!privateKey) {
+            try {
+                const privateKeyPath = path.join(process.cwd(), 'snowflake_rsa_key.p8');
+                privateKey = fs.readFileSync(privateKeyPath, 'utf8');
+            } catch (err) {
+                reject(new Error("SNOWFLAKE_PRIVATE_KEY environment variable is missing and local .p8 file was not found."));
+                return;
+            }
+        }
+
+        // Format the key if the user strictly pasted the base64 content without headers
+        if (privateKey && !privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
+            const cleanKey = privateKey.replace(/\s+/g, '');
+            // Snowflake requires newlines every 64 characters for the raw base64 string
+            const chunked = cleanKey.match(/.{1,64}/g)?.join('\n') || cleanKey;
+            privateKey = `-----BEGIN PRIVATE KEY-----\n${chunked}\n-----END PRIVATE KEY-----`;
+        }
 
         const conn = snowflake.createConnection({
             account: process.env.SNOWFLAKE_ACCOUNT || '',
             username: process.env.SNOWFLAKE_USERNAME || '',
             authenticator: 'SNOWFLAKE_JWT',
-            privateKey: privateKeyFile,
+            privateKey: privateKey,
             database: process.env.SNOWFLAKE_DATABASE || 'COVID19_EPIDEMIOLOGICAL_DATA',
             schema: process.env.SNOWFLAKE_SCHEMA || 'PUBLIC',
             warehouse: process.env.SNOWFLAKE_WAREHOUSE || 'SNOWQUERY_WH',
