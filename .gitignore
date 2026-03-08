@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Snowflake RSA Keys
+*.p8
+*.pub
+# Local setup scripts output
+key_for_snowflake.txt

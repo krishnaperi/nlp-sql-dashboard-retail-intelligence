@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SnowQuery
 
-## Getting Started
+A Next.js application that converts natural language questions into Snowflake SQL queries and renders interactive ECharts visualizations on a dynamic Multi-Chart Dashboard framework.
 
-First, run the development server:
+## Architecture
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+* **Frontend:** Next.js (React), framer-motion, Apache ECharts
+* **Backend:** Next.js Serverless API Routes
+* **AI Engine:** Google Gemini (NL-to-SQL logic) 
+* **Database:** Snowflake (Cortex Analyst, Key-Pair Authentication)
+* **Design:** Custom Dark-Mode CSS grid with Glassmorphism UI
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Local Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd snowquery
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-## Learn More
+3. **Configure Environment Variables:**
+   Create a `.env.local` file in the root directory and add your credentials. **Never commit this file to version control.**
 
-To learn more about Next.js, take a look at the following resources:
+   ```env
+   # API Keys
+   GEMINI_API_KEY=your_gemini_api_key
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+   # Snowflake Configuration
+   SNOWFLAKE_ACCOUNT=your_account_id
+   SNOWFLAKE_USERNAME=your_username
+   SNOWFLAKE_PRIVATE_KEY=your_base64_private_key_without_headers
+   SNOWFLAKE_DATABASE=COVID19_EPIDEMIOLOGICAL_DATA
+   SNOWFLAKE_SCHEMA=PUBLIC
+   SNOWFLAKE_WAREHOUSE=SNOWQUERY_WH
+   SNOWFLAKE_ROLE=ACCOUNTADMIN
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
 
-## Deploy on Vercel
+5. **Open [http://localhost:3000](http://localhost:3000) in your browser.**
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Authentication Note
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This application uses **Key-Pair Authentication** to connect to Snowflake, replacing standard password authentication to securely bypass multi-factor authentication (MFA) requirements for programmatic access. Ensure your `.p8` private key files or raw text keys are added to your `.gitignore`.
