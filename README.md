@@ -1,52 +1,105 @@
-# SnowQuery
+# SnowQuery: AI-Powered Snowflake Data Intelligence
 
-A Next.js application that converts natural language questions into Snowflake SQL queries and renders interactive ECharts visualizations on a dynamic Multi-Chart Dashboard framework.
+SnowQuery is a high-performance **Natural Language to Visualization (NL-to-Viz)** platform designed to democratize access to the Global COVID-19 Epidemiological dataset. It leverages **Google Gemini 1.5 Pro** for semantic-to-SQL translation and **Snowflake's** cloud data warehouse for low-latency analytical queries.
 
-## Architecture
+## 🏗️ Technical Architecture
 
-* **Frontend:** Next.js (React), framer-motion, Apache ECharts
-* **Backend:** Next.js Serverless API Routes
-* **AI Engine:** Google Gemini (NL-to-SQL logic) 
-* **Database:** Snowflake (Cortex Analyst, Key-Pair Authentication)
-* **Design:** Custom Dark-Mode CSS grid with Glassmorphism UI
+SnowQuery follows a modern serverless architecture with a focus on security and high-fidelity data visualization.
 
-## Local Setup
+```mermaid
+graph TD
+    subgraph "Client Layer (Next.js 14)"
+        UI["React Server Components"]
+        CHT["Chat Interface"]
+        VIZ["Recharts Visualization Engine"]
+    end
 
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd snowquery
-   ```
+    subgraph "AI Oracle (Google Gemini)"
+        PRM["Semantic SQL Prompt Engine"]
+        SCH["Categorized Schema Context"]
+    end
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+    subgraph "Data Layer (Snowflake)"
+        JWT["JWT Key-Pair Auth"]
+        SF["COVID19_EPIDEMIOLOGICAL_DATA"]
+        PUB["PUBLIC Schema (30+ Tables)"]
+    end
 
-3. **Configure Environment Variables:**
-   Create a `.env.local` file in the root directory and add your credentials. **Never commit this file to version control.**
+    subgraph "Deployment (Vercel)"
+        ENV["Edge Runtime Envars"]
+        NORM["PEM Normalization Logic"]
+    end
 
-   ```env
-   # API Keys
-   GEMINI_API_KEY=your_gemini_api_key
+    UI --> CHT
+    CHT --> PRM
+    PRM --> SCH
+    PRM --> SF
+    SF --> JWT
+    SF --> PUB
+    SF --> VIZ
+    NORM --> JWT
+```
 
-   # Snowflake Configuration
-   SNOWFLAKE_ACCOUNT=your_account_id
-   SNOWFLAKE_USERNAME=your_username
-   SNOWFLAKE_PRIVATE_KEY=your_base64_private_key_without_headers
-   SNOWFLAKE_DATABASE=COVID19_EPIDEMIOLOGICAL_DATA
-   SNOWFLAKE_SCHEMA=PUBLIC
-   SNOWFLAKE_WAREHOUSE=SNOWQUERY_WH
-   SNOWFLAKE_ROLE=ACCOUNTADMIN
-   ```
+### 🔐 Authentication Flow: JWT Key-Pair
+SnowQuery implements a robust **JWT-based Key-Pair Authentication** for Snowflake. This approach bypasses traditional password-based login and MFA, making it highly suitable for serverless environments (Vercel).
+- **Normalizer Edge Logic**: Implements an aggressive PEM normalizer to handle Vercel's environment variable escaping, ensuring `BEGIN/END PRIVATE KEY` blocks are valid for OpenSSL 3.0.
 
-4. **Run the development server:**
-   ```bash
-   npm run dev
-   ```
+## 📊 Analytical Scope
+The platform is indexed against the entire **COVID-19 Epidemiological Data** public share.
 
-5. **Open [http://localhost:3000](http://localhost:3000) in your browser.**
+| Data Domain | Description |
+| :--- | :--- |
+| **Core Epidemiology** | ECDC Global, JHU Tracking, WHO Daily Reports |
+| **Public Health** | CDC Inpatient Bed Occupancy, KFF ICU Capacity |
+| **Interventions** | Global Vaccination Progress (OWID/JHU), Policy Measures |
+| **Human Impact** | Google/Apple Mobility Reports, US Reopening Status |
+| **Regional Granularity** | Detailed tracking for Germany (RKI), Italy (PCM), Belgium, and Canada |
 
-## Authentication Note
+## 🚀 Teck Stack
+- **Framework**: Next.js 14 (App Router)
+- **Styling**: Tailwind CSS / Vanilla CSS
+- **AI Engine**: Google Generative AI (Gemini 1.5 Pro)
+- **Database**: Snowflake (Data Warehouse)
+- **Data Visualization**: Recharts (Responsive D3-based engine)
+- **Deployment**: Vercel
 
-This application uses **Key-Pair Authentication** to connect to Snowflake, replacing standard password authentication to securely bypass multi-factor authentication (MFA) requirements for programmatic access. Ensure your `.p8` private key files or raw text keys are added to your `.gitignore`.
+## 🛠️ Installation & Setup
+
+### 1. Prerequisite: Snowflake Key-Pair
+Generate your RSA private and public keys:
+```bash
+openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -out snowflake_rsa_key.p8 -nocrypt
+openssl rsa -in snowflake_rsa_key.p8 -pubout -out snowflake_rsa_key.pub
+```
+
+### 2. Environment Configuration
+Create a `.env.local` file with the following parameters:
+```env
+# Snowflake Configuration
+SNOWFLAKE_ACCOUNT=your_account_id
+SNOWFLAKE_USERNAME=your_username
+SNOWFLAKE_PASSWORD=your_password_or_token
+SNOWFLAKE_DATABASE=COVID19_EPIDEMIOLOGICAL_DATA
+SNOWFLAKE_SCHEMA=PUBLIC
+SNOWFLAKE_WAREHOUSE=COMPUTE_WH
+SNOWFLAKE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvAIB... (paste full key material)"
+
+# AI Configuration
+GEMINI_API_KEY=your_gemini_api_key
+```
+
+### 3. Run Locally
+```bash
+npm install
+npm run dev
+```
+
+## 🧠 NL-to-SQL Prompt Engineering
+The system uses a highly optimized **Instruction-Based Prompt** that includes:
+- **Fully Qualified Identifiers**: Ensures all queries target `DB.SCHEMA.TABLE`.
+- **Snowflake Dialect Specifics**: Enforces `ILIKE`, `TO_DATE`, and `DATE_TRUNC`.
+- **Data Integrity Guards**: Automatically wraps daily metrics in `GREATEST(0, col)` to handle historical corrections (negative counts).
+- **Multi-Table JOIN Logic**: Standardizes joins across diverse providers on `COUNTRY_REGION` and `DATE`.
+
+---
+*Built for High-Scale Data Intelligence.*
