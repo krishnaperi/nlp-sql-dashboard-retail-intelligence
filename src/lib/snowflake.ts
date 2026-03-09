@@ -26,15 +26,18 @@ function getConnection(): Promise<snowflake.Connection> {
 
         // Use the raw private key string directly, this matches the working test script
         if (privateKey) {
-            // Vercel UI often mangles multi-line strings. If the user pasted the key 
-            // as a single string with literal \n characters, we need to un-escape them.
-            if (privateKey.includes('\\n')) {
-                privateKey = privateKey.replace(/\\n/g, '\n');
-            }
+            // Vercel UI often mangles multi-line strings.
+            // 1. Remove ANY surrounding spaces or quotes
+            privateKey = privateKey.trim().replace(/^["']|["']$/g, '');
 
-            // Remove any potential surrounding quotes the user might have accidentally included
-            if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
-                privateKey = privateKey.slice(1, -1);
+            // 2. Fix escaped newlines
+            privateKey = privateKey.replace(/\\n/g, '\n');
+
+            // 3. Reconstruct correct PEM format if Vercel stripped newlines around the headers
+            if (!privateKey.includes('\n')) {
+                privateKey = privateKey
+                    .replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n')
+                    .replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
             }
         }
 
