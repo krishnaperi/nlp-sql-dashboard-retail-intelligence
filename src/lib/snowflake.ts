@@ -26,18 +26,22 @@ function getConnection(): Promise<snowflake.Connection> {
 
         // Use the raw private key string directly, this matches the working test script
         if (privateKey) {
-            // Vercel UI often mangles multi-line strings.
-            // 1. Remove ANY surrounding spaces or quotes
-            privateKey = privateKey.trim().replace(/^["']|["']$/g, '');
-
-            // 2. Fix escaped newlines
-            privateKey = privateKey.replace(/\\n/g, '\n');
-
-            // 3. Reconstruct correct PEM format if Vercel stripped newlines around the headers
-            if (!privateKey.includes('\n')) {
-                privateKey = privateKey
-                    .replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n')
-                    .replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
+            // Check if the key is a base64 encoded string (no spaces, newlines, or headers)
+            // This is the safest way to pass multi-line RSA keys through Vercel's UI
+            if (!privateKey.includes('BEGIN PRIVATE KEY') && !privateKey.includes('\\n')) {
+                try {
+                    privateKey = Buffer.from(privateKey.trim(), 'base64').toString('utf8');
+                } catch (e) {
+                    console.error('Failed to decode base64 private key:', e);
+                }
+            } else {
+                // Fallback for local testing or if passing a raw string
+                privateKey = privateKey.trim().replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
+                if (!privateKey.includes('\n')) {
+                    privateKey = privateKey
+                        .replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n')
+                        .replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
+                }
             }
         }
 
