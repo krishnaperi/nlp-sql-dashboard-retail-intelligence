@@ -26,7 +26,16 @@ function getConnection(): Promise<snowflake.Connection> {
 
         // Use the raw private key string directly, this matches the working test script
         if (privateKey) {
-            // No regex mangling, Snowflake SDK expects a valid PEM string
+            // Vercel UI often mangles multi-line strings. If the user pasted the key 
+            // as a single string with literal \n characters, we need to un-escape them.
+            if (privateKey.includes('\\n')) {
+                privateKey = privateKey.replace(/\\n/g, '\n');
+            }
+
+            // Remove any potential surrounding quotes the user might have accidentally included
+            if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+                privateKey = privateKey.slice(1, -1);
+            }
         }
 
         const conn = snowflake.createConnection({
