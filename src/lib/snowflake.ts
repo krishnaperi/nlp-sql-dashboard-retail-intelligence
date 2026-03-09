@@ -24,24 +24,9 @@ function getConnection(): Promise<snowflake.Connection> {
             }
         }
 
-        // Format the key to ensure it is always perfectly formulated for OpenSSL
+        // Use the raw private key string directly, this matches the working test script
         if (privateKey) {
-            // Strip out ANY existing headers, agnostically removing them and any whitespace
-            let cleanKey = privateKey
-                .replace(/-----BEGIN PRIVATE KEY-----/gi, '')
-                .replace(/-----END PRIVATE KEY-----/gi, '')
-                .replace(/-----BEGIN RSA PRIVATE KEY-----/gi, '')
-                .replace(/-----END RSA PRIVATE KEY-----/gi, '')
-                // CRITICAL: Vercel often wraps multi-line environment variables in literal double quotes `"` or single quotes `'`.
-                // Plus, it might double-escape newlines.
-                // We strip absolutely EVERYTHING that isn't a valid Base64 character (A-Z, a-z, 0-9, +, /, =)
-                .replace(/[^A-Za-z0-9+/=]/g, '');
-
-            // Snowflake and OpenSSL require newlines approximately every 64 characters for the raw base64 string
-            const chunked = cleanKey.match(/.{1,64}/g)?.join('\n') || cleanKey;
-
-            // Re-wrap it with perfect boundaries and real newlines
-            privateKey = `-----BEGIN PRIVATE KEY-----\n${chunked}\n-----END PRIVATE KEY-----`;
+            // No regex mangling, Snowflake SDK expects a valid PEM string
         }
 
         const conn = snowflake.createConnection({
@@ -49,7 +34,7 @@ function getConnection(): Promise<snowflake.Connection> {
             username: process.env.SNOWFLAKE_USERNAME || '',
             authenticator: 'SNOWFLAKE_JWT',
             privateKey: privateKey,
-            database: process.env.SNOWFLAKE_DATABASE || 'COVID19_EPIDEMIOLOGICAL_DATA',
+            database: process.env.SNOWFLAKE_DATABASE || 'ONSITE_SEARCH',
             schema: process.env.SNOWFLAKE_SCHEMA || 'PUBLIC',
             warehouse: process.env.SNOWFLAKE_WAREHOUSE || 'SNOWQUERY_WH',
         });
@@ -94,10 +79,13 @@ export async function executeQuery(sql: string): Promise<{ columns: string[]; ro
 }
 
 export async function getTableSchema(): Promise<{ tables: { name: string; columns: { name: string; type: string }[] }[] }> {
+    const dbName = process.env.SNOWFLAKE_DATABASE || 'ONSITE_SEARCH';
+    const schemaName = process.env.SNOWFLAKE_SCHEMA || 'PUBLIC';
+
     const sql = `
     SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE
-    FROM COVID19_EPIDEMIOLOGICAL_DATA.INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_SCHEMA = 'PUBLIC'
+    FROM ${dbName}.INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = '${schemaName}'
     ORDER BY TABLE_NAME, ORDINAL_POSITION
   `;
 

@@ -93,7 +93,7 @@ export default function HomePage() {
             </div>
             <div className="logo-text">
               <h1>SnowQuery</h1>
-              <span>Covid-19 Analytics</span>
+              <span>Retail Intelligence</span>
             </div>
           </div>
         </div>
@@ -128,20 +128,20 @@ export default function HomePage() {
               <div className="hero-glow" />
               <h2 className="hero-title">
                 Ask anything about
-                <span className="hero-highlight"> Covid-19 data</span>
+                <span className="hero-highlight"> Product Demand</span>
               </h2>
               <p className="hero-subtitle">
                 Natural language → Snowflake SQL → Interactive visualizations
               </p>
               <div className="hero-stats">
                 <div className="hero-stat">
-                  <span className="hero-stat-value">8+</span>
-                  <span className="hero-stat-label">Data Tables</span>
+                  <span className="hero-stat-value">5M+</span>
+                  <span className="hero-stat-label">Products</span>
                 </div>
                 <div className="hero-stat-divider" />
                 <div className="hero-stat">
-                  <span className="hero-stat-value">200+</span>
-                  <span className="hero-stat-label">Countries</span>
+                  <span className="hero-stat-value">Top 100</span>
+                  <span className="hero-stat-label">Retailers</span>
                 </div>
                 <div className="hero-stat-divider" />
                 <div className="hero-stat">

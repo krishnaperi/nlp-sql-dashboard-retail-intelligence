@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SnowQuery — Covid-19 Data Visualization",
-  description: "Ask natural language questions about Covid-19 pandemic data and get interactive visualizations powered by Snowflake Cortex.",
+  title: "SnowQuery — Retail Demand Intelligence",
+  description: "Ask natural language questions about retail product demand and get interactive visualizations powered by Snowflake Cortex.",
 };
 
 export default function RootLayout({

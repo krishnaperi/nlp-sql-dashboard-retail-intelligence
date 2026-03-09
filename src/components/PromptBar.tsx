@@ -9,12 +9,12 @@ interface PromptBarProps {
 }
 
 const EXAMPLE_QUESTIONS = [
-    '🌍 Show total cases by country, top 20',
-    '📈 Daily new cases trend in the United States',
-    '💉 Compare vaccination rates across continents',
-    '📊 Top 10 countries by death rate',
-    '🗺️ Global case distribution by continent',
-    '📉 Cases vs Deaths correlation by country',
+    '🛍️ Show top 10 keywords by search volume',
+    '📈 Which sites have the most traffic for "laptop"?',
+    '📱 Show total search volume by site over time',
+    '📊 Compare unique users and total visits by country',
+    '💰 What are the trending keywords on amazon.com?',
+    '📉 Show the daily search volume for "ps5"',
 ];
 
 export default function PromptBar({ onSubmit, isLoading }: PromptBarProps) {
@@ -63,7 +63,7 @@ export default function PromptBar({ onSubmit, isLoading }: PromptBarProps) {
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder="Ask a question about Covid-19 data..."
+                        placeholder="Ask a question about product demand and retail data..."
                         className="prompt-textarea"
                         rows={1}
                         disabled={isLoading}
