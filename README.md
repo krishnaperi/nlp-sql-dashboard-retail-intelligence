@@ -1,6 +1,6 @@
-# SnowQuery: AI-Powered Snowflake Data Intelligence
+# SnowQuery: Retail Demand Intelligence Dashboard
 
-SnowQuery is a high-performance **Natural Language to Visualization (NL-to-Viz)** platform designed to democratize access to the Global COVID-19 Epidemiological dataset. It leverages **Google Gemini 1.5 Pro** for semantic-to-SQL translation and **Snowflake's** cloud data warehouse for low-latency analytical queries.
+SnowQuery is a high-performance **Natural Language to Visualization (NL-to-Viz)** platform designed to democratize access to Retail and E-commerce Product Demand datasets (such as Similarweb's Onsite Search data). It leverages **Groq (Llama 3.3 70B)** for semantic-to-SQL translation and **Snowflake's** cloud data warehouse for low-latency analytical queries.
 
 ## 🏗️ Technical Architecture
 
@@ -14,20 +14,19 @@ graph TD
         VIZ["Recharts Visualization Engine"]
     end
 
-    subgraph "AI Oracle (Google Gemini)"
+    subgraph "AI Oracle (Groq LLM)"
         PRM["Semantic SQL Prompt Engine"]
-        SCH["Categorized Schema Context"]
+        SCH["Retail Schema Context"]
     end
 
     subgraph "Data Layer (Snowflake)"
         JWT["JWT Key-Pair Auth"]
-        SF["COVID19_EPIDEMIOLOGICAL_DATA"]
-        PUB["PUBLIC Schema (30+ Tables)"]
+        SF["ONSITE_SEARCH Database"]
+        PUB["DATAFEEDS Schema"]
     end
 
     subgraph "Deployment (Vercel)"
         ENV["Edge Runtime Envars"]
-        NORM["PEM Normalization Logic"]
     end
 
     UI --> CHT
@@ -37,40 +36,33 @@ graph TD
     SF --> JWT
     SF --> PUB
     SF --> VIZ
-    NORM --> JWT
 ```
 
 ### 🔐 Authentication Flow: JWT Key-Pair
-SnowQuery implements a robust **JWT-based Key-Pair Authentication** for Snowflake. This approach bypasses traditional password-based login and MFA, making it highly suitable for serverless environments (Vercel).
-- **Normalizer Edge Logic**: Implements an aggressive PEM normalizer to handle Vercel's environment variable escaping, ensuring `BEGIN/END PRIVATE KEY` blocks are valid for OpenSSL 3.0.
+SnowQuery implements extremely secure **JWT-based Key-Pair Authentication** for Snowflake. This approach bypasses traditional password-based login and MFA, making it highly suitable for serverless environments (Vercel) and programmatic API access.
 
 ## 📊 Analytical Scope
-The platform is indexed against the entire **COVID-19 Epidemiological Data** public share.
+The platform is indexed against **Retail Demand** and **Onsite Search** datasets, enabling complex business questions like:
+- "Show top 10 keywords by search volume"
+- "Which sites have the most traffic for 'laptop'?"
+- "Compare unique users and total visits by country"
+- "What are the trending keywords on amazon.com?"
 
-| Data Domain | Description |
-| :--- | :--- |
-| **Core Epidemiology** | ECDC Global, JHU Tracking, WHO Daily Reports |
-| **Public Health** | CDC Inpatient Bed Occupancy, KFF ICU Capacity |
-| **Interventions** | Global Vaccination Progress (OWID/JHU), Policy Measures |
-| **Human Impact** | Google/Apple Mobility Reports, US Reopening Status |
-| **Regional Granularity** | Detailed tracking for Germany (RKI), Italy (PCM), Belgium, and Canada |
-
-## 🚀 Teck Stack
+## 🚀 Tech Stack
 - **Framework**: Next.js 14 (App Router)
-- **Styling**: Tailwind CSS / Vanilla CSS
-- **AI Engine**: Google Generative AI (Gemini 1.5 Pro)
+- **Styling**: Tailwind CSS & Framer Motion (Glassmorphism & Micro-animations)
+- **AI Engine**: Groq SDK (Llama 3.3 70B Versatile)
 - **Database**: Snowflake (Data Warehouse)
 - **Data Visualization**: Recharts (Responsive D3-based engine)
-- **Deployment**: Vercel
 
 ## 🛠️ Installation & Setup
 
 ### 1. Prerequisite: Snowflake Key-Pair
-Generate your RSA private and public keys:
+Generate your RSA private and public keys. We provide a helper script for this:
 ```bash
-openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -out snowflake_rsa_key.p8 -nocrypt
-openssl rsa -in snowflake_rsa_key.p8 -pubout -out snowflake_rsa_key.pub
+node scripts/generate-keys.js
 ```
+Follow the output instructions to register the public key to your Snowflake user account (`ALTER USER ... SET RSA_PUBLIC_KEY='...'`).
 
 ### 2. Environment Configuration
 Create a `.env.local` file with the following parameters:
@@ -78,15 +70,14 @@ Create a `.env.local` file with the following parameters:
 # Snowflake Configuration
 SNOWFLAKE_ACCOUNT=your_account_id
 SNOWFLAKE_USERNAME=your_username
-SNOWFLAKE_PASSWORD=your_password_or_token
-SNOWFLAKE_DATABASE=COVID19_EPIDEMIOLOGICAL_DATA
-SNOWFLAKE_SCHEMA=PUBLIC
+SNOWFLAKE_DATABASE=ONSITE_SEARCH__PRODUCT_DEMAND_ANALYSIS_ON_RETAIL_SITES_AND_MARKETPLACES
+SNOWFLAKE_SCHEMA=DATAFEEDS
 SNOWFLAKE_WAREHOUSE=COMPUTE_WH
-SNOWFLAKE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvAIB... (paste full key material)"
 
 # AI Configuration
-GEMINI_API_KEY=your_gemini_api_key
+GROQ_API_KEY=your_groq_api_key
 ```
+*(Ensure your `snowflake_rsa_key.p8` file is in the root directory, it will be automatically parsed).*
 
 ### 3. Run Locally
 ```bash
@@ -95,11 +86,10 @@ npm run dev
 ```
 
 ## 🧠 NL-to-SQL Prompt Engineering
-The system uses a highly optimized **Instruction-Based Prompt** that includes:
-- **Fully Qualified Identifiers**: Ensures all queries target `DB.SCHEMA.TABLE`.
-- **Snowflake Dialect Specifics**: Enforces `ILIKE`, `TO_DATE`, and `DATE_TRUNC`.
-- **Data Integrity Guards**: Automatically wraps daily metrics in `GREATEST(0, col)` to handle historical corrections (negative counts).
-- **Multi-Table JOIN Logic**: Standardizes joins across diverse providers on `COUNTRY_REGION` and `DATE`.
+The system uses a highly optimized **Instruction-Based Prompt** that is dynamically aware of the session's Snowflake schema. It:
+- Maps natural language intent (e.g., "traffic", "demand") to specific columns (e.g., `CALIBRATED_VISITS`).
+- Automatically formats the response as a JSON dashboard configuration with up to 4 charts per analysis.
+- Generates context-aware follow-up questions to keep the user engaged in their data exploration.
 
 ---
-*Built for High-Scale Data Intelligence.*
+*Built for High-Scale Retail Data Intelligence.*
